@@ -1,0 +1,126 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: hello-world-app
+  namespace: flux-system
+spec:
+  image: beneboba/hello-world
+  interval: 30s
+  secretRef:
+    name: dockerhub-key
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: hello-world-app
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: hello-world-app
+  policy:
+    semver:
+      range: '>=0.0.1'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hello-world-app-configs
+  namespace: playground-dfgjkt
+type: Opaque
+stringData:
+  APP_NAME: "Go Hello World"
+  APP_VERSION: "1.0.0"
+  APP_PORT: "8080"
+  APP_ENV: "production"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world-app
+  namespace: playground-dfgjkt
+  labels:
+    app: hello-world-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello-world-app
+  template:
+    metadata:
+      labels:
+        app: hello-world-app
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-key
+      containers:
+        - name: hello-world-app
+          image: beneboba/hello-world:1.0.0 # {"$imagepolicy": "flux-system:hello-world-app"}
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "250m" # Request 0.25 CPU
+              memory: "256Mi"
+            limits:
+              cpu: "500m" # Max 0.5 CPU
+              memory: "512Mi"
+          envFrom:
+            - secretRef:
+                name: "hello-world-app-configs"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hello-world-app
+  namespace: playground-dfgjkt
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hello-world-app
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50 # Target 70% CPU utilization
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world-app
+  namespace: playground-dfgjkt
+  labels:
+    app: hello-world-app
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: hello-world-app
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-world-app
+  namespace: playground-dfgjkt
+spec:
+  rules:
+    - host: sample.benelabs.fun
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hello-world-app
+                port:
+                  number: 80
+  ingressClassName: traefik
