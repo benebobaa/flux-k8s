@@ -54,7 +54,7 @@ spec:
         - name: dockerhub-key
       containers:
         - name: hello-world-app
-          image: beneboba/hello-world:1.0.1 # {"$imagepolicy": "flux-system:hello-world-app"}
+          image: beneboba/hello-world:1.1.0 # {"$imagepolicy": "flux-system:hello-world-app"}
           ports:
             - containerPort: 8080
           resources:
@@ -87,7 +87,6 @@ spec:
         target:
           type: Utilization
           averageUtilization: 50 # Target 70% CPU utilization
-
 ---
 apiVersion: v1
 kind: Service
