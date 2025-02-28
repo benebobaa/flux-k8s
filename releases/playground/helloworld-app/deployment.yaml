@@ -25,7 +25,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: hello-world-app-configs
-  namespace: playground-dfgjkt
+  namespace: playground
 type: Opaque
 stringData:
   APP_NAME: "Go Hello World"
@@ -37,7 +37,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hello-world-app
-  namespace: playground-dfgjkt
+  namespace: playground
   labels:
     app: hello-world-app
 spec:
@@ -72,7 +72,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: hello-world-app
-  namespace: playground-dfgjkt
+  namespace: playground
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -93,7 +93,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: hello-world-app
-  namespace: playground-dfgjkt
+  namespace: playground
   labels:
     app: hello-world-app
 spec:
@@ -110,7 +110,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: hello-world-app
-  namespace: playground-dfgjkt
+  namespace: playground
 spec:
   rules:
     - host: sample.benelabs.fun
