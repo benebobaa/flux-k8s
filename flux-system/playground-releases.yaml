@@ -27,7 +27,7 @@ spec:
         branch: main
     commit:
       author:
-        email: git-robot@dwyor.xyz
+        email: git-robot@benelabs.fun
         name: git-robot
       messageTemplate: |
         Automated image update
